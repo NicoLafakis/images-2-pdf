@@ -21,18 +21,27 @@ import {
  * Updated with Orientation and Auto-Fit logic for better LinkedIn formatting.
  */
 
+interface ImageItem {
+  id: string;
+  file: File;
+  preview: string;
+  name: string;
+}
+
+type Orientation = 'p' | 'l' | 'auto';
+
 export default function App() {
-  const [images, setImages] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isLibLoaded, setIsLibLoaded] = useState(false);
-  const [pdfName, setPdfName] = useState('linkedin-presentation.pdf');
+  const [images, setImages] = useState<ImageItem[]>([]);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isLibLoaded, setIsLibLoaded] = useState<boolean>(false);
+  const [pdfName, setPdfName] = useState<string>('linkedin-presentation.pdf');
   
   // Settings
-  const [orientation, setOrientation] = useState('auto'); // 'p', 'l', 'auto'
-  const [margin, setMargin] = useState(0); // 0 is best for "removing background"
+  const [orientation, setOrientation] = useState<Orientation>('auto');
+  const [margin, setMargin] = useState<number>(0); // 0 is best for "removing background"
   
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Dynamically load jsPDF from CDN
   useEffect(() => {
@@ -147,7 +156,9 @@ export default function App() {
         });
       }
 
-      pdf.save(pdfName.endsWith('.pdf') ? pdfName : `${pdfName}.pdf`);
+      if (pdf) {
+        pdf.save(pdfName.endsWith('.pdf') ? pdfName : `${pdfName}.pdf`);
+      }
     } catch (error) {
       console.error("PDF Generation failed", error);
     } finally {
@@ -244,7 +255,8 @@ export default function App() {
                 accept="image/*" 
                 className="hidden" 
                 ref={fileInputRef}
-                onChange={(e) => handleFiles(e.target.files)}
+                onChange={(e) => e.target.files && handleFiles(e.target.files)}
+                aria-label="Upload images"
               />
               <div className="flex flex-col items-center gap-3">
                 <div className="w-14 h-14 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center">
@@ -275,6 +287,7 @@ export default function App() {
                         onClick={(e) => { e.stopPropagation(); moveImage(index, -1); }}
                         disabled={index === 0}
                         className="hover:text-blue-500 disabled:opacity-0 p-1"
+                        aria-label="Move slide up"
                       >
                         <ChevronUp size={18} />
                       </button>
@@ -282,6 +295,7 @@ export default function App() {
                         onClick={(e) => { e.stopPropagation(); moveImage(index, 1); }}
                         disabled={index === images.length - 1}
                         className="hover:text-blue-500 disabled:opacity-0 p-1"
+                        aria-label="Move slide down"
                       >
                         <ChevronDown size={18} />
                       </button>
@@ -300,6 +314,7 @@ export default function App() {
                     <button 
                       onClick={(e) => { e.stopPropagation(); removeImage(img.id); }}
                       className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                      aria-label="Remove slide"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -324,23 +339,27 @@ export default function App() {
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider">File Name</label>
+                  <label htmlFor="pdf-filename" className="text-xs font-black text-slate-400 uppercase tracking-wider">File Name</label>
                   <input 
+                    id="pdf-filename"
                     type="text" 
                     value={pdfName}
                     onChange={(e) => setPdfName(e.target.value)}
                     className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Enter file name"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Padding (Background)</label>
+                  <label htmlFor="padding-slider" className="text-xs font-black text-slate-400 uppercase tracking-wider">Padding (Background)</label>
                   <div className="flex items-center gap-4">
                     <input 
+                      id="padding-slider"
                       type="range" min="0" max="20" step="5" 
                       value={margin} 
                       onChange={(e) => setMargin(Number(e.target.value))}
                       className="flex-grow"
+                      aria-label="Padding in millimeters"
                     />
                     <span className="text-sm font-bold text-slate-700 w-8">{margin}mm</span>
                   </div>
