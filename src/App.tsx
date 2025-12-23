@@ -388,7 +388,7 @@ export default function App() {
       </div>
 
       <footer className="mt-12 py-8 border-t border-slate-200 max-w-4xl mx-auto text-center text-slate-400 text-xs">
-        <p>Built for Dayton area creators. 100% Client-side processing.</p>
+        <p>100% Client-side processing.</p>
         {!isLibLoaded && <p className="text-orange-400 mt-2 font-bold animate-pulse">Initializing engine...</p>}
       </footer>
     </div>
