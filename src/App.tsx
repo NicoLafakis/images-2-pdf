@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Upload, 
   FileText, 
@@ -7,7 +7,6 @@ import {
   ChevronUp,
   ChevronDown,
   Trash2,
-  FilePlus,
   Loader2,
   Maximize,
   Layout,
@@ -57,8 +56,8 @@ export default function App() {
     };
   }, []);
 
-  const handleFiles = (files) => {
-    const newImages = Array.from(files)
+  const handleFiles = (files: FileList) => {
+    const newImages: ImageItem[] = Array.from(files)
       .filter(file => file.type.startsWith('image/'))
       .map(file => ({
         id: Math.random().toString(36).substr(2, 9),
@@ -70,15 +69,22 @@ export default function App() {
     setImages(prev => [...prev, ...newImages]);
   };
 
-  const onDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const onDragLeave = () => { setIsDragging(false); };
-  const onDrop = (e) => {
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => { 
+    e.preventDefault(); 
+    setIsDragging(true); 
+  };
+  
+  const onDragLeave = () => { 
+    setIsDragging(false); 
+  };
+  
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     handleFiles(e.dataTransfer.files);
   };
 
-  const removeImage = (id) => {
+  const removeImage = (id: string) => {
     setImages(prev => {
       const filtered = prev.filter(img => img.id !== id);
       const removed = prev.find(img => img.id === id);
@@ -87,7 +93,7 @@ export default function App() {
     });
   };
 
-  const moveImage = (index, direction) => {
+  const moveImage = (index: number, direction: number) => {
     const newImages = [...images];
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= newImages.length) return;
@@ -103,14 +109,15 @@ export default function App() {
       const { jsPDF } = window.jspdf;
       
       // Initialize PDF with first image specs if in auto mode
-      let pdf = null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let pdf: any = null;
 
       for (let i = 0; i < images.length; i++) {
         const imgData = await getBase64(images[i].file);
         const img = new Image();
         img.src = images[i].preview;
         
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve) => {
           img.onload = () => {
             const imgWidthInPx = img.width;
             const imgHeightInPx = img.height;
@@ -120,7 +127,7 @@ export default function App() {
             const widthMm = imgWidthInPx * pxToMm;
             const heightMm = imgHeightInPx * pxToMm;
 
-            let pageOrientation = orientation === 'auto' 
+            const pageOrientation: 'l' | 'p' = orientation === 'auto' 
               ? (widthMm > heightMm ? 'l' : 'p') 
               : orientation;
 
@@ -166,11 +173,11 @@ export default function App() {
     }
   };
 
-  const getBase64 = (file) => {
+  const getBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
+      reader.onload = () => resolve(reader.result as string);
       reader.onerror = error => reject(error);
     });
   };
